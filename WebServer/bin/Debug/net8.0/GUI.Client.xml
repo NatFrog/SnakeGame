@@ -1,0 +1,607 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GUI.Client</name>
+    </assembly>
+    <members>
+        <member name="T:GUI.Client.Controllers.NetworkConnection">
+            <summary>
+              Wraps the StreamReader/Writer/TcpClient together so we
+              don't have to keep creating all three for network actions.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Controllers.NetworkConnection._tcpClient">
+            <summary>
+              The connection/socket abstraction
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Controllers.NetworkConnection._reader">
+            <summary>
+              Reading end of the connection
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Controllers.NetworkConnection._writer">
+            <summary>
+              Writing end of the connection
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.#ctor(System.Net.Sockets.TcpClient)">
+            <summary>
+              Initializes a new instance of the <see cref="T:GUI.Client.Controllers.NetworkConnection"/> class.
+              <para>
+                Create a network connection object.
+              </para>
+            </summary>
+            <param name="tcpClient">
+              An already existing TcpClient
+            </param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.#ctor">
+            <summary>
+              Initializes a new instance of the <see cref="T:GUI.Client.Controllers.NetworkConnection"/> class.
+              <para>
+                Create a network connection object.  The tcpClient will be unconnected at the start.
+              </para>
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Controllers.NetworkConnection.IsConnected">
+            <summary>
+            Gets a value indicating whether the socket is connected.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.Connect(System.String,System.Int32)">
+            <summary>
+              Try to connect to the given host:port. 
+            </summary>
+            <param name="host"> The URL or IP address, e.g., www.cs.utah.edu, or  127.0.0.1. </param>
+            <param name="port"> The port, e.g., 11000. </param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.Send(System.String)">
+            <summary>
+              Send a message to the remote server.  If the <paramref name="message"/> contains
+              new lines, these will be treated on the receiving side as multiple messages.
+              This method should attach a newline to the end of the <paramref name="message"/>
+              (by using WriteLine).
+              If this operation can not be completed (e.g. because this NetworkConnection is not
+              connected), throw an InvalidOperationException.
+            </summary>
+            <param name="message"> The string of characters to send. </param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.ReadLine">
+            <summary>
+              Read a message from the remote side of the connection.  The message will contain
+              all characters up to the first new line. See <see cref="M:GUI.Client.Controllers.NetworkConnection.Send(System.String)"/>.
+              If this operation can not be completed (e.g. because this NetworkConnection is not
+              connected), throw an InvalidOperationException.
+            </summary>
+            <returns> The contents of the message. </returns>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.Disconnect">
+            <summary>
+              If connected, disconnect the connection and clean 
+              up (dispose) any streams.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkConnection.Dispose">
+            <summary>
+              Automatically called with a using statement (see IDisposable)
+            </summary>
+        </member>
+        <member name="T:GUI.Client.Controllers.NetworkController">
+            <summary>
+            This class represents a NetworkController object 
+            which sets up a connection to a specified server. 
+            NetworkController contains methods for the functionality 
+            needed between the client and the server using the logic
+            of the Snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Controllers.NetworkController.connectionString">
+            <summary>
+            <summary>
+            The connection string to connect to the Snake database.
+            </summary>
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.#ctor(System.Int32,System.String)">
+            <summary>
+            Sets up a network connection to a server 
+            with the specified port and address.
+            </summary>
+            <param name="port"></param>
+            <param name="address"></param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.NetworkDisconnect(GUI.Client.Models.World)">
+            <summary>
+            Disconnects this network.
+            from the server.
+            Updates the end time of the game and the leave times
+            of all snakes who were connected in the game.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.HandleNetwork(System.String,GUI.Client.Models.World@,System.Int32@)">
+            <summary>
+            This method runs the connection between the snake client
+            and the server. It starts by sending the name of the snake
+            client user to the server, then gets the ID of the client
+            from the server and the dimension of the World that the 
+            snake game is running in. Then for as long as the method is 
+            ran, strings sent from the server are read and then passed into 
+            HandleData to be added to the World.
+            </summary>
+            <param name="PlayerName"></param>
+            <param name="gameWorld"></param>
+            <param name="id"></param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.HandleData(System.String,GUI.Client.Models.World)">
+            <summary>
+            Converts the string Json to an object and if the
+            object is a Snake, Powerup, or Wall it adds the object
+            to the World. If the snake trying to be added has disconnected,
+            the snake is removed from the world. If the powerup has died,
+            the powerup is removed from the world.
+            </summary>
+            <param name="Json"></param>
+            <param name="gameWorld"></param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.KeyPress(System.String)">
+            <summary>
+            Sends command request to the server based on
+            if the key "W", "A", "S" or "D" was pressed. If 
+            the key press was not any of these options then 
+            no command is sent.
+            
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.AddRowToGame">
+            <summary>
+            Adds a row to the game which has this game's id as it's ID and
+            the current time as the start time.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.UpdatePlayerScore(GUI.Client.Models.Snake,System.Int32)">
+            <summary>
+            This method updates the score of a player with the player's max score
+            </summary>
+            <param name="snake"></param> a snake to have score updated
+            <param name="game"></param> the players corresponding game id
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.AddRowToPlayers(GUI.Client.Models.Snake,System.Int32)">
+            <summary>
+            This method adds a row to players when a snake is introduced to the game, 
+            the player is not given a leave time because at this point they player is still in the game
+            </summary>
+            <param name="snake"></param> a snake representing the player being added to 
+            <param name="game"></param> the game id of the player
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.UpdateGameEndTime(System.Int32)">
+            <summary>
+            This method updates the game end time once the game is disconnected aka once the game ends
+            </summary>
+            <param name="game"></param> the id of the ending game
+        </member>
+        <member name="M:GUI.Client.Controllers.NetworkController.UpdateSnakeLeaveTime(GUI.Client.Models.Snake,System.Int32)">
+            <summary>
+            This method updates the leave time of the snake given a snake and its corresponding games
+            </summary>
+            <param name="snake"></param> a snake representing the snake that just left the game
+            <param name="game"></param> an integer representing the corresponding game id
+        </member>
+        <member name="T:GUI.Client.Controllers.Server">
+            <summary>
+              Represents a server task that waits for connections on a given
+              port and calls the provided delegate when a connection is made.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Controllers.Server.StartServer(System.Action{GUI.Client.Controllers.NetworkConnection},System.Int32)">
+            <summary>
+              Wait on a TcpListener for new connections. Alert the main program
+              via a callback (delegate) mechanism.
+            </summary>
+            <param name="handleConnect">
+              Handler for what the user wants to do when a connection is made.
+              This should be run asynchronously via a new thread.
+            </param>
+            <param name="port"> The port (e.g., 11000) to listen on. </param>
+        </member>
+        <member name="T:GUI.Client.Models.Point2D">
+            <summary>
+            This class represents a pair of 2 integers, or a 2D point.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Point2D.X">
+            <summary>
+            The X coordinate of this point.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Point2D.Y">
+            <summary>
+            The Y coordinate of this point.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Point2D.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor for a Point2D, sets the 
+            X and Y coordinates of this point to the 
+            entered parameters.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Point2D.#ctor">
+            <summary>
+            Default constructor for a Point2D.
+            </summary>
+        </member>
+        <member name="T:GUI.Client.Models.Powerup">
+            <summary>
+            This class represents the Powerup object which has a 
+            location, a ID, and can die.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Powerup.power">
+            <summary>
+            An int representing the powerup's unique ID.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Powerup.loc">
+            <summary>
+             A Point2D representing the location of the powerup.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Powerup.died">
+            <summary>
+            a bool indicating if the powerup "died" (was collected by a player) on this frame. 
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Powerup.#ctor">
+            <summary>
+            Default constructor for a Powerup.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Powerup.#ctor(System.Int32,GUI.Client.Models.Point2D,System.Boolean)">
+            <summary>
+            Constructor for a Powerup object. Assigns
+            the power, loc, and died status of the Powerup
+            to the entered parameters.
+            </summary>
+            <param name="power"></param>
+            <param name="loc"></param>
+            <param name="died"></param>
+        </member>
+        <member name="T:GUI.Client.Models.Snake">
+            <summary>
+            This class represents the Snake object that is composed of 
+            a list of Point2Ds representing the line segments of this Snake.
+            The snake has various properties that define its condition.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.snake">
+            <summary>
+            an int representing the snake's unique ID.  
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.name">
+            <summary>
+            a string representing the player's name.
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:GUI.Client.Models.Snake.body" -->
+        <member name="F:GUI.Client.Models.Snake.direction">
+            <summary>
+            an Point2D representing the snake's orientation. This will always be 
+            an axis-aligned vector (purely horizontal or vertical). 
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.score">
+            <summary>
+            an int representing the player's score (the number of powerups it has 
+            eaten).
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.died">
+            <summary>
+             a bool indicating if the snake died on this frame.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.alive">
+            <summary>
+             a bool indicating whether a snake is alive or dead.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.dc">
+            <summary>
+            a bool indicating if the player controlling that snake 
+            disconnected on that frame.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Snake.maxScore">
+            <summary>
+            an int indicating the max score of the player
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Models.Snake.join">
+            <summary>
+            a bool indicating if the player joined on this frame.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Snake.#ctor">
+            <summary>
+            Default constructor for a snake object
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Snake.#ctor(System.Int32,System.String,System.Collections.Generic.List{GUI.Client.Models.Point2D},GUI.Client.Models.Point2D,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Constructor for a snake object
+            
+            </summary>
+            <param name="id"></param>
+            <param name="name"></param>
+            <param name="body"></param>
+            <param name="direction"></param>
+            <param name="score"></param>
+            <param name="died"></param>
+            <param name="alive"></param>
+            <param name="dc"></param>
+            <param name="join"></param>
+        </member>
+        <member name="T:GUI.Client.Models.Wall">
+            <summary>
+            This class represents a Wall object that has a unique id (wall),
+            and 2 Point2D properties which define the two endpoints of the Wall.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Wall.wall">
+            <summary>
+            An int representing this wall's unique ID.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Wall.p1">
+            <summary>
+            A Point2D representing one endpoint of this wall.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.Wall.p2">
+            <summary>
+            A Point2D representing the other endpoint of this wall.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Wall.#ctor">
+            <summary>
+            Default constructor for a Wall.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.Wall.#ctor(System.Int32,GUI.Client.Models.Point2D,GUI.Client.Models.Point2D)">
+            <summary>
+            Constructor for a Wall that takes in an int
+            whose value is assigned as the ID or wall property of
+            this wall, and then 2 Point2D objects which represent the
+            start point and endpoint of this wall.
+            </summary>
+            <param name="wall"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+        </member>
+        <member name="T:GUI.Client.Models.World">
+            <summary>
+            This class represents a World object which can hold Snakes, Powerups,
+            and Walls. A world has specific dimension or size, and also has the ability 
+            to have Snakes, Powerups, and Walls added or removed from it.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.World.Snakes">
+            <summary>
+            All of the Snakes in this World.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.World.Powerups">
+            <summary>
+            All of the Powerups in this World.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.World.Walls">
+            <summary>
+            All of the Walls in this World.
+            </summary>
+        </member>
+        <member name="P:GUI.Client.Models.World.Dimension">
+            <summary>
+            The dimension of a single side of the square world.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Models.World.#ctor(System.Int32)">
+            <summary>
+            Creates a new world with the given dimension.
+            </summary>
+            <param name="dimension"></param>
+        </member>
+        <member name="M:GUI.Client.Models.World.#ctor(GUI.Client.Models.World)">
+            <summary>
+            Shallow copy constructor.
+            </summary>
+            <param name="world"></param>
+        </member>
+        <member name="M:GUI.Client.Models.World.AddObject(System.Object)">
+            <summary>
+             Adds an object to the World. Can add a Snake, Powerup or a Wall. 
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:GUI.Client.Models.World.RemoveObject(System.Object)">
+            <summary>
+            Removes an object to the World. Can remove a Snake, Powerup or a Wall. 
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.canvasReference">
+            <summary>
+            Canvas code objects that were given in handout code.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.ViewHeight">
+            <summary>
+            Height of the canvas view.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.ViewWidth">
+            <summary>
+            Width of the canvas view.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.backgroundImage">
+            <summary>
+            Image used as the background in the snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.wallImage">
+            <summary>
+            Image used to draw walls in the snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.snakeFace">
+            <summary>
+            Image used as the face of the snake.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.ServerPort">
+            <summary>
+            The port that the snake game tries to connect to
+            a server on.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.ServerNameOrAddress">
+            <summary>
+            The address of the server that the snake game tries
+            to connect to.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.PlayerName">
+            <summary>
+            The name of the player of this client in the
+            snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.GameWorld">
+            <summary>
+            The world that represents all objects that
+            exist and are interacting in the snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.User">
+            <summary>
+            The id of the player of this client in the
+            snake game.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.connected">
+            <summary>
+            Whether or not this snake client in connected
+            to the server.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.DeadSnakes">
+            <summary>
+            A list of snakes that have died; used to count how long after death the
+            snake should be red and a explosion should occur.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.controller">
+            <summary>
+            Controller used to connect the snake client to the server and send
+            commands/handle data sent from the server.
+            </summary>
+        </member>
+        <member name="F:GUI.Client.Pages.SnakeGUI.ShowError">
+            <summary>
+            True if there was an error connecting to the server, false if the client
+            successfully connected.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.ConnectToServer">
+            <summary>
+                Connects to the server, and sets connected to true.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DisconnectFromServer">
+            <summary>
+            Disconnects the snake game from the server, sets connected to false so
+             that the GUI stops drawing things.
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.OnAfterRenderAsync(System.Boolean)">
+            <summary>
+            When the snake GUI page is opened it initializes things needed
+             for drawing and starts the game loop.
+            </summary>
+            <param name="firstRender"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.GameLoop">
+            <summary>
+            Renders the view via DrawFrame once every 20ms (50fps).
+            </summary>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DrawFrame">
+            <summary>
+            First draws a blue background, then if the snake game is connected to the server
+            it will start drawing the data from the server.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DrawSnake(GUI.Client.Models.Snake,System.String)">
+            <summary>
+            Draws a Snake object
+            </summary>
+            <param name="s"></param>
+            <param name="color"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DrawCircle(System.Double,System.Double,System.Double,System.Double,System.Double,System.String)">
+            <summary>
+            Draws a circle at the specified coordinate
+            with the given radius.
+            </summary>
+            <param name="xCoord"></param>
+            <param name="yCoord"></param>
+            <param name="radius"></param>
+            <param name="startAngle"></param>
+            <param name="endAngle"></param>
+            <param name="color"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DrawExplosion(System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Draws a rainbow explosion going out from the given
+            coordinates using differently colored circles.
+            </summary>
+            <param name="xCoord"></param>
+            <param name="yCoord"></param>
+            <param name="radius"></param>
+            <param name="startAngle"></param>
+            <param name="endAngle"></param>
+            <param name="s"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DrawWall(GUI.Client.Models.Wall)">
+            <summary>
+            This method draws a wall by calculating the correct coordinates
+            of every 50x50 piece of the wall and drawing each of them at that
+            coordinate.
+            </summary>
+            <param name="w"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.HandleKeyPress(System.String)">
+            <summary>
+            Calls KeyPress method using key
+            if the client is connected to the
+            server and the controller isn't null
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:GUI.Client.Pages.SnakeGUI.DismissError">
+            <summary>
+            This helper method sets the status of ShowError to false
+            </summary>
+        </member>
+    </members>
+</doc>
